@@ -402,6 +402,7 @@ code{font-family:var(--f-mono);font-size:12px;background:var(--subtle);padding:1
     <div class="rail-aud" id="railAud"></div>
     <div class="rail-foot">
       <button class="btn btn-ghost btn-sm" id="btnSettings" aria-label="Paramètres"><svg class="icon" viewBox="0 0 24 24"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.7 1.7 0 0 0 .3 1.8l.1.1a2 2 0 1 1-2.8 2.8l-.1-.1a1.7 1.7 0 0 0-1.8-.3 1.7 1.7 0 0 0-1 1.5V21a2 2 0 1 1-4 0v-.1a1.7 1.7 0 0 0-1.1-1.5 1.7 1.7 0 0 0-1.8.3l-.1.1a2 2 0 1 1-2.8-2.8l.1-.1a1.7 1.7 0 0 0 .3-1.8 1.7 1.7 0 0 0-1.5-1H3a2 2 0 1 1 0-4h.1a1.7 1.7 0 0 0 1.5-1.1 1.7 1.7 0 0 0-.3-1.8l-.1-.1a2 2 0 1 1 2.8-2.8l.1.1a1.7 1.7 0 0 0 1.8.3H9a1.7 1.7 0 0 0 1-1.5V3a2 2 0 1 1 4 0v.1a1.7 1.7 0 0 0 1 1.5 1.7 1.7 0 0 0 1.8-.3l.1-.1a2 2 0 1 1 2.8 2.8l-.1.1a1.7 1.7 0 0 0-.3 1.8V9a1.7 1.7 0 0 0 1.5 1H21a2 2 0 1 1 0 4h-.1a1.7 1.7 0 0 0-1.5 1z"/></svg><span class="hide-sm">Paramètres</span></button>
+      <button class="btn btn-ghost btn-sm" id="btnLogout" aria-label="Se déconnecter"><svg class="icon" viewBox="0 0 24 24"><path d="M15 4h3a2 2 0 0 1 2 2v12a2 2 0 0 1-2 2h-3"/><path d="M10 17l-5-5 5-5M5 12h11"/></svg><span class="hide-sm">Se déconnecter</span></button>
       <button class="btn btn-cta btn-sm" id="btnNew"><svg class="icon" viewBox="0 0 24 24"><path d="M12 5v14M5 12h14"/></svg>Nouveau contenu</button>
     </div>
   </aside>
@@ -510,7 +511,7 @@ const flux=(function(){
   addEventListener('resize',()=>{clearTimeout(start.t);start.t=setTimeout(start,150)});
   document.addEventListener('visibilitychange',()=>{if(!on)return;if(document.hidden)cancelAnimationFrame(raf);else if(!reduce)raf=requestAnimationFrame(frame)});
   start();
-  return {start,burst(){boost=1},stop(){on=false;cancelAnimationFrame(raf)}};
+  return {start,burst(){boost=1},stop(){on=false;cancelAnimationFrame(raf)},restart(){on=true;start()}};
 })();
 
 async function expectedHash(){ return config.codeHash || DEFAULT_CODE_HASH; }
@@ -856,6 +857,13 @@ document.addEventListener('click', async e=>{
 });
 $('#btnNew').onclick=()=>openEditor(null,{});
 $('#btnSettings').onclick=openSettings;
+$('#btnLogout').onclick=()=>{
+  if(staticMode){ location.href='/__deconnexion'; return; }
+  try{ localStorage.removeItem('lsf-media-unlock') }catch(e){}
+  if(!$('#drawer').hidden) closeDrawer();
+  $('#gateCode').value=''; $('#gateErr').textContent='';
+  $('#app').hidden=true; $('#gate').hidden=false; flux.restart();
+};
 
 /* =================== Fiche contenu =================== */
 function openDrawer(title){ $('#drawerTitle').textContent=title; const d=$('#drawer'),s=$('#scrim'); d.hidden=false; s.hidden=false; requestAnimationFrame(()=>{d.classList.add('open');s.classList.add('open')}); }
