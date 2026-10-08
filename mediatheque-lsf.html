@@ -470,6 +470,8 @@ const stOf = id => STATUSES.find(s=>s.id===id) || STATUSES[2];
 /* =================== État =================== */
 let db=null, assets=null, user=null, canWrite=true, offline=false;
 let contents=[]; let config={}; let syncInfo=null; let view='vue';
+/* Version consultation (Cloudflare) : données lues dans data.json, images dans img/. */
+let staticMode=false, assetFiles={}, exportedAt=null;
 let filters={aud:'all', cat:'all', status:'all', q:''};
 let libGroup=(()=>{try{return localStorage.getItem('lsf-lib-group')||'cat'}catch(e){return 'cat'}})();
 let mapCat='all', mapSel=null, mapHover=null, linkMode=false, anPeriod=null;
@@ -552,7 +554,8 @@ function render(){
 
 function renderNotices(){
   const n=[];
-  if(offline) n.push(`<div><p><b>Mode aperçu.</b> Les données partagées ne sont pas disponibles dans cette vue. Ouvrez la médiathèque depuis claude.ai en étant connecté·e pour voir et enregistrer les contenus.</p></div>`);
+  if(staticMode) n.push(`<div><p><b>Version consultation.</b> Mise à jour automatique chaque jour à 10 h${exportedAt?' · dernière mise à jour le '+new Date(exportedAt).toLocaleDateString('fr-FR',{day:'numeric',month:'long'})+' à '+new Date(exportedAt).toLocaleTimeString('fr-FR',{hour:'2-digit',minute:'2-digit'}):''}. Pour ajouter ou modifier un contenu, utilisez la médiathèque sur claude.ai.</p></div>`);
+  else if(offline) n.push(`<div><p><b>Mode aperçu.</b> Les données partagées ne sont pas disponibles dans cette vue. Ouvrez la médiathèque depuis claude.ai en étant connecté·e pour voir et enregistrer les contenus.</p></div>`);
   else if(!canWrite) n.push(`<div><p>Vous consultez la médiathèque en lecture seule. Demandez un accès « Contributeur » pour ajouter ou modifier des contenus.</p></div>`);
   const ex=contents.filter(c=>c.exemple).length;
   if(ex && canWrite) n.push(`<div><p><b>${ex} contenus d'exemple</b> sont affichés pour montrer le fonctionnement. Ajoutez vos contenus, puis supprimez les exemples.</p><button class="btn btn-sm" data-act="del-examples">Supprimer les exemples</button></div>`);
@@ -563,7 +566,9 @@ function latest(c){ const hs=(c.metrics||[]).slice().sort((a,b)=>a.period<b.peri
 function statusDot(s){ return `<span class="st-dot s-${s}" aria-hidden="true"></span>`; }
 function statusPill(s){ return `<span class="st s-${s}">${statusDot(s)}${stOf(s).label}</span>`; }
 function audTag(a){ const A=audOf(a); return `<span class="aud-tag"><span class="aud-dot" style="background:${A.c}"></span>${A.label}</span>`; }
-function thumbUrl(c){ return c.thumbId ? '/_blob/'+encodeURIComponent(c.thumbId) : ''; }
+function blobUrl(id){ if(!id) return ''; return staticMode ? (assetFiles[id] ? 'img/'+encodeURIComponent(assetFiles[id]) : '') : '/_blob/'+encodeURIComponent(id); }
+function thumbUrl(c){ return blobUrl(c.thumbId); }
+function hrefOf(u){ const m=String(u||'').match(/^\/_blob\/([0-9a-f]{32})/); return m ? blobUrl(m[1]) : (u||''); }
 
 /* ---------- Vue globale ---------- */
 function renderOverview(){
@@ -714,7 +719,7 @@ function renderMap(){
   <div class="map-wrap"><div class="map ${linkMode?'linking':''}" id="map" style="grid-template-columns:${tpl}"><svg class="links" id="mapSvg" aria-hidden="true"></svg>${cols}</div></div>
   <div class="map-side">${sel?`<div class="panel"><span class="kicker">Contenu sélectionné</span><h2>${h(sel.title)}</h2><div style="display:flex;gap:8px;flex-wrap:wrap;align-items:center">${audTag(sel.audience)}${statusPill(sel.status)}<span class="hint">${h(catOf(sel.category).label)}</span></div>
     <div class="list">${linksOf(sel).length?linksOf(sel).map(id=>{const o=contents.find(c=>c.id===id);return `<button class="list-row" data-node="${o.id}">${statusDot(o.status)}<span class="t">${h(o.title)}</span><span class="aud-dot" style="background:${audOf(o.audience).c}"></span><span class="meta">${h(catOf(o.category).label)}</span></button>`}).join(''):'<p class="empty-msg">Ce contenu n\'est relié à aucun autre pour l\'instant.</p>'}</div>
-    <div style="display:flex;gap:8px;flex-wrap:wrap">${canWrite&&db&&!linkMode?'<button class="btn btn-cta btn-sm" data-act="link-start">Relier des contenus</button>':''}<button class="btn btn-sm" data-open="${sel.id}">Ouvrir la fiche</button>${sel.url?`<a class="btn btn-sm" href="${h(sel.url)}" target="_blank" rel="noopener">Voir en ligne ↗</a>`:''}<button class="btn btn-ghost btn-sm" data-act="map-clear">Tout afficher</button></div></div>`
+    <div style="display:flex;gap:8px;flex-wrap:wrap">${canWrite&&db&&!linkMode?'<button class="btn btn-cta btn-sm" data-act="link-start">Relier des contenus</button>':''}<button class="btn btn-sm" data-open="${sel.id}">Ouvrir la fiche</button>${sel.url?`<a class="btn btn-sm" href="${h(hrefOf(sel.url))}" target="_blank" rel="noopener">Voir en ligne ↗</a>`:''}<button class="btn btn-ghost btn-sm" data-act="map-clear">Tout afficher</button></div></div>`
     :''}</div>`;
   $('#mapCat').onchange=e=>{mapCat=e.target.value;mapSel=null;linkMode=false;renderMap()};
   const map=$('#map');
@@ -874,7 +879,7 @@ function openEditor(c, preset={}){
       <div class="field"><label for="f-cat">Format</label><select id="f-cat" ${ro?'disabled':''}>${cats().map(x=>`<option value="${h(x.id)}" ${editing.category===x.id?'selected':''}>${h(x.label)}</option>`).join('')}</select></div>
       <div class="field"><label for="f-due">Échéance</label><input id="f-due" type="date" value="${h(editing.due||'')}" ${ro?'disabled':''}></div>
     </div>
-    <div class="field"><label for="f-url">Lien (URL)</label>${ro&&editing.url?`<a class="link-out" href="${h(editing.url)}" target="_blank" rel="noopener">${h(editing.url)}</a>`:`<input id="f-url" type="url" value="${h(editing.url)}" placeholder="https://" ${ro?'disabled':''}>`}${!ro&&editing.url?`<a class="link-out" href="${h(editing.url)}" target="_blank" rel="noopener">Ouvrir le lien ↗</a>`:''}</div>
+    <div class="field"><label for="f-url">Lien (URL)</label>${ro&&editing.url?`<a class="link-out" href="${h(hrefOf(editing.url))}" target="_blank" rel="noopener">${h(editing.url)}</a>`:`<input id="f-url" type="url" value="${h(editing.url)}" placeholder="https://" ${ro?'disabled':''}>`}${!ro&&editing.url?`<a class="link-out" href="${h(hrefOf(editing.url))}" target="_blank" rel="noopener">Ouvrir le lien ↗</a>`:''}</div>
     <div class="field"><label for="f-desc">Description</label><textarea id="f-desc" placeholder="Objectif, message clé, où il est diffusé…" ${ro?'disabled':''}>${h(editing.description)}</textarea></div>
     <div class="row2">
       <div class="field"><label for="f-owner">Responsable</label><input id="f-owner" type="text" value="${h(editing.owner)}" placeholder="Prénom" ${ro?'disabled':''}></div>
@@ -1025,7 +1030,14 @@ function cleanCfg(){ const c={}; if(config.codeHash) c.codeHash=config.codeHash;
 async function boot(){
   render();
   const cl=window.claude;
-  if(!cl||!cl.use){ offline=true; render(); checkRemembered(); return; }
+  if(!cl||!cl.use){
+    try{
+      const r=await fetch('data.json',{cache:'no-store'});
+      if(r.ok){ const d=await r.json();
+        staticMode=true; canWrite=false; contents=d.contents||[]; config=d.config||{}; syncInfo=d.ga4||null; assetFiles=d.assets||{}; exportedAt=d.exportedAt||null;
+        $('#btnSettings').hidden=true; render(); unlock(); return; }
+    }catch(e){}
+    offline=true; render(); checkRemembered(); return; }
   [db,user,assets]=await Promise.all([cl.use('db'),cl.use('user'),cl.use('assets').catch(()=>null)]);
   if(!db){ offline=true; render(); checkRemembered(); return; }
   if(user){ const w=await user.can('data.write'); canWrite = w!==false; }
