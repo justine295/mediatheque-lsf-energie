@@ -1,0 +1,69 @@
+/* ============================================================
+   LSF Énergie — Tokens des outils internes
+   Référence : reporting-marketing.lsf-energies.fr (Pilotage acquisition)
+   Appliqués aussi à la Médiathèque contenus.
+   Couleurs de marque communes avec lsf-energie.fr et la landing
+   « Financer mes CEE » : pétrole #123B3A, terracotta #C7623D.
+
+   Structure commune des outils :
+   - rail latéral pétrole (260 px) : logo LSF / ÉNERGIE, nom de l'outil
+     en Archivo 700, navigation (item actif : fond --rail-sel + filet
+     terracotta 3 px à gauche), sections en capitales espacées ;
+   - en-tête blanc avec titre de page, filet bas --line ;
+   - fond --ground, cartes blanches à filet 1 px, rayon 4 px ;
+   - titres de section précédés d'une barre terracotta 3 × 16 px.
+   ============================================================ */
+@import url("https://fonts.googleapis.com/css2?family=Archivo:wght@500;600;700&family=IBM+Plex+Sans:wght@400;500;600&family=IBM+Plex+Mono:wght@400;500&display=swap");
+
+:root {
+  /* Marque */
+  --logo-marque: #123B3A;
+  --terra: #C7623D;
+  --terra-ink: #9A462A;
+  --terra-soft: #F9ECE6;
+  --sable: #E9C7A8;
+
+  /* Rail */
+  --rail: #123B3A;
+  --rail-ink: #FFFFFF;
+  --rail-muted: #C3D4D2;
+  --rail-faint: #A9C8C3;
+  --rail-hover: #204746;
+  --rail-selected: #2A514F;
+  --rail-logo: #E3A071;
+
+  /* Surfaces & texte */
+  --ground: #F7F9F8;
+  --surface: #FFFFFF;
+  --surface-2: #F1F5F4;
+  --sunken: #E9EFED;
+  --ink: #141A19;
+  --ink-title: #123B3A;
+  --ink-2: #465250;
+  --ink-3: #5F6C69;
+  --line: #DCE4E1;
+  --line-2: #C3D0CB;
+  --accent-soft: #EDF4F2;
+
+  /* États */
+  --ok: #2F7D4F;   --ok-soft: #E2EFE7;
+  --warn: #9A6A0B; --warn-soft: #F6EDDB;
+  --crit: #A8322A; --crit-soft: #F6E4E2;
+
+  /* Cibles (palette catégorielle validée daltonisme, clair) */
+  --aud-prescripteurs: #008B7A;
+  --aud-installateurs: #C7623D;
+  --aud-beneficiaires: #5B6CC4;
+  --aud-obliges: #4F9A2E;
+  --aud-institutionnel: #B0508A;
+  --aud-interne: #A88A2A;
+
+  /* Typo */
+  --f-display: "Archivo", "Helvetica Neue", Arial, sans-serif;
+  --f-body: "IBM Plex Sans", "Segoe UI", system-ui, sans-serif;
+  --f-mono: "IBM Plex Mono", "SF Mono", Menlo, monospace;
+
+  /* Formes */
+  --r: 4px;
+  --shadow: 0 1px 3px rgb(20 26 25 / 3%);
+}

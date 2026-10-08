@@ -1,0 +1,39 @@
+{
+ "_comment": "Rattachement des données GA4 aux fiches de la médiathèque. Chaque règle additionne toutes les pages du domaine (ou du chemin si 'path' est donné) par mois. Les domaines absents sont ignorés.",
+ "rules": [
+  {
+   "host": "lsf-energie.fr",
+   "content_id": "site-lsf"
+  },
+  {
+   "host": "pipeline-cee.lsf-energie.fr",
+   "content_id": "lp-pipeline-v1"
+  },
+  {
+   "host": "financer-mes-cee.pipeline.lsf-energie.fr",
+   "content_id": "lp-pipeline-v2"
+  },
+  {
+   "host": "confort-et-energie.lsf-energie.fr",
+   "content_id": "lp-confort-energie"
+  },
+  {
+   "host": "simulateur-cee.lsf-energie.fr",
+   "content_id": "simulateur-cee"
+  },
+  {
+   "host": "cee-coproprietes.com",
+   "content_id": "lp-pac-collective"
+  },
+  {
+   "host": "www.cee-coproprietes.com",
+   "content_id": "lp-pac-collective"
+  }
+ ],
+ "ignored_hosts": [
+  "caeclaro.es",
+  "127.0.0.1",
+  "localhost",
+  "financer-mes-cee.pages.dev"
+ ]
+}

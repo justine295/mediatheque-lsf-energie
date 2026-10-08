@@ -1,0 +1,23 @@
+[
+ {
+  "name": "Confort & Energie",
+  "slug": "confort",
+  "pageId": "1312067248662495",
+  "audience": "beneficiaires",
+  "landing": "lp-confort-energie"
+ },
+ {
+  "name": "Valorisation CEE",
+  "slug": "valocee",
+  "pageId": "163514536854439",
+  "audience": "installateurs",
+  "landing": "lp-pipeline-v2"
+ },
+ {
+  "name": "Programme PAC Collective",
+  "slug": "paccollective",
+  "pageId": "1376178018908150",
+  "audience": "beneficiaires",
+  "landing": "lp-pac-collective"
+ }
+]

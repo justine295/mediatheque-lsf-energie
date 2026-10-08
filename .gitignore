@@ -1,0 +1,16 @@
+# Fichiers régénérés à chaque synchro quotidienne
+ga4-export.json
+ga4-updates.json
+sync-plan.json
+vignettes-todo.json
+vignettes-result.json
+db-snapshot/
+pubs-meta/
+vignettes/
+documents/
+
+# Réglages locaux de Claude Code (autorisations propres à ce poste)
+.claude/settings.local.json
+
+.DS_Store
+__pycache__/
